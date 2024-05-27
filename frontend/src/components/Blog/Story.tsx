@@ -12,12 +12,16 @@ import 'react-quill/dist/quill.bubble.css';
 import RemoveIcon from '../icons/Remove';
 import EditIcon from '../icons/Edit';
 import SingleBlogSkeleton from '../../skeletons/SingleBlogSkeleton';
+import ClapIcon from '../icons/Clap';
 import { Tags } from '../Tags';
-import ClapButton from '../ClapButton';
 import Avatar from '../Avatar';
 
 const Story = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  function handleClickOnAvatar() {
+    navigate('/' + id);
+  }
   const { blog, loading } = useBlog({
     id: id || '',
   });
@@ -33,7 +37,12 @@ const Story = () => {
     <div className="flex flex-col justify-center items-center p-4 md:px-10">
       <div className="p-4 max-w-[680px]">
         <div className="text-xl md:text-4xl font-extrabold py-4 line-clamp-4">{blog?.title}</div>
-        <AuthorBox name={blog?.author?.name} details={blog?.author?.details} publishedDate={blog?.publishedDate} />
+        <AuthorBox
+          name={blog?.author?.name}
+          details={blog?.author?.details}
+          publishedDate={blog?.publishedDate}
+          handleClickOnAvatar={handleClickOnAvatar}
+        />
         <ActionBox />
         <div className="py-4">
           <ReactQuill value={blog?.content} readOnly={true} theme={'bubble'} />
@@ -55,9 +64,10 @@ const ActionBox = () => {
   const [openUnbookmarkModal, setOpenUnbookmarkModal] = useState(false);
 
   const { id } = useParams();
-  const { blog, loading, deleteBlog, bookmarkBlog, unbookmarkBlog, submittingBookmark, likeBlog } = useBlog({
-    id: id || '',
-  });
+  const { blog, loading, deleteBlog, bookmarkBlog, unbookmarkBlog, submittingBookmark, submittingClap, likeBlog } =
+    useBlog({
+      id: id || '',
+    });
   if (loading) <Loader />;
   const user = JSON.parse(localStorage.getItem('user') || '{}') || {};
   const isAuthor = user?.id === blog?.author?.id;
@@ -107,7 +117,20 @@ const ActionBox = () => {
   return (
     <div className="text-slate-500 py-2 items-center justify-between flex border-y border-slate-200">
       <div className="text-sm">
-        <ClapButton clapCount={blog?.claps?.length || 0} handleClap={likeBlog} />
+        {submittingClap ? (
+          <Spinner className="p-0 m-0 w-4 h-4" />
+        ) : (
+          <Tooltip message="Clap">
+            <button
+              onClick={likeBlog}
+              type="button"
+              name="like-story"
+              className="focus:outline-none text-slate-400 rounded-lg px-4 flex gap-2 justify-center items-center"
+            >
+              <ClapIcon /> {blog?.claps?.length || ''}
+            </button>
+          </Tooltip>
+        )}
       </div>
       <div className="flex justify-center items-center">
         {determineBookmarkView()}
@@ -150,14 +173,16 @@ const AuthorBox = ({
   name,
   details,
   publishedDate,
+  handleClickOnAvatar,
 }: {
   name: string;
   details: string | undefined;
   publishedDate: string;
+  handleClickOnAvatar: React.MouseEventHandler<HTMLDivElement>;
 }) => (
   <div className="p-4">
     <div className="flex items-center gap-4 py-4">
-      <Avatar name={name || 'Anonymous'} />
+      <Avatar name={name || 'Anonymous'} onClick={handleClickOnAvatar} />
       <div>
         <div className="font-bold">{name || 'Anonymous'}</div>
         <div>
