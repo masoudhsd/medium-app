@@ -12,19 +12,21 @@ import 'react-quill/dist/quill.bubble.css';
 import RemoveIcon from '../icons/Remove';
 import EditIcon from '../icons/Edit';
 import SingleBlogSkeleton from '../../skeletons/SingleBlogSkeleton';
-import ClapIcon from '../icons/Clap';
 import { Tags } from '../Tags';
 import Avatar from '../Avatar';
 
 const Story = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  function handleClickOnAvatar() {
-    navigate('/' + id);
-  }
+
   const { blog, loading } = useBlog({
     id: id || '',
   });
+
+  function handleClickOnAvatar() {
+    navigate('/' + blog?.author?.id);
+  }
+
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center p-4 md:px-10">
@@ -127,7 +129,7 @@ const ActionBox = () => {
               name="like-story"
               className="focus:outline-none text-slate-400 rounded-lg px-4 flex gap-2 justify-center items-center"
             >
-              <ClapIcon /> {blog?.claps?.length || ''}
+              {/* <ClapIcon /> {blog?.claps?.length || ''} */}
             </button>
           </Tooltip>
         )}
